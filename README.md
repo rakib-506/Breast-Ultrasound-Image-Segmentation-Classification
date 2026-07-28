@@ -149,49 +149,6 @@ Each non-mask `.png` is paired with a `<name>_mask.png`; images without a matchi
 
 ![Sample data](assets/sample_data_example.png)
 
----
-
-## Training
-
-Run `notebooks/training.ipynb` end-to-end, or extract the core loop into a script:
-
-```python
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-num_epochs = 40
-alpha, beta = 1.0, 0.5  # segmentation vs. classification loss weight
-
-for epoch in range(num_epochs):
-    train_loss = train_epoch(model, train_loader, optimizer)
-    val_loss, val_acc = eval_epoch(model, val_loader)
-    if val_loss < best_val_loss:
-        torch.save(model.state_dict(), "best_model.pth")
-```
-
-- **Loss:** `loss = alpha * BCE(seg_pred, mask) + beta * CrossEntropy(cls_pred, label)`
-- **Checkpointing:** the model is saved whenever validation loss improves; the best checkpoint is reloaded for evaluation.
-- **Split:** stratified 80/20 train/validation on class labels (39 train batches / 10 val batches at batch size 16).
-
-> Note: the current notebook trains for a fixed 40 epochs with a constant learning rate and checkpoint-on-best-val-loss — there's no LR scheduler or patience-based early-stopping callback wired in yet. If you're adding cosine annealing (`torch.optim.lr_scheduler.CosineAnnealingLR`) or early stopping, that's a straightforward addition to the training loop above.
-
----
-
-## Inference
-
-`notebooks/model-testing.ipynb` loads a saved checkpoint and runs the model on new images:
-
-```python
-model = MultiTaskUNet(num_classes=3)
-model.load_state_dict(torch.load("best_model.pth"))
-model.eval()
-
-input_tensor = transform(image).unsqueeze(0).to(device)
-seg_pred, cls_pred = model(input_tensor)
-```
-
-- **Input:** a grayscale ultrasound image (any size, resized to 256×256).
-- **Output:** a binary tumor mask (sigmoid, thresholded at 0.5) and a predicted class (normal/benign/malignant).
-
----
 
 ## Results
 

@@ -1,4 +1,4 @@
-# BUS-MTNet — Breast Ultrasound Segmentation & Classification
+# BUS-MTNet — Breast Ultrasound Segmentation & Classification Using U-net Architecture
 
 ### Multi-Task U-Net for Joint Tumor Segmentation and Classification on the BUSI Dataset
 
